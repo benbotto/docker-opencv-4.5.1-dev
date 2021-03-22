@@ -2,7 +2,9 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /var/
+ARG UID=1000
+
+WORKDIR /var/src/
 
 RUN apt-get update \
   && apt-get install -y -qq \
@@ -27,5 +29,16 @@ RUN git clone https://github.com/opencv/opencv.git \
   && cmake .. \
   && make -j4 \
   && make install \
-  && cd /var/ \
-  && rm -rf /var/opencv
+  && cd /var/src/ \
+  && rm -rf /var/src/opencv
+
+RUN adduser \
+    --disabled-password \
+    --gecos '' \
+    --uid $UID \
+    opencv \
+  && usermod -aG video opencv \
+  && chown opencv:opencv /var/src
+
+USER opencv
+CMD /bin/bash
